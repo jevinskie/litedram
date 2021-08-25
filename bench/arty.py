@@ -75,7 +75,7 @@ class BenchSoC(SoCCore):
         SoCCore.__init__(self, platform, clk_freq=sys_clk_freq,
             ident               = "LiteDRAM bench on Arty",
             ident_version       = True,
-            cpu_type            = "vexriscv",
+            cpu_type            = "picorv32",
             cpu_variant         = "minimal",
             integrated_rom_size = 0x10000,
             integrated_rom_mode = "rw",
@@ -90,7 +90,7 @@ class BenchSoC(SoCCore):
             memtype      = "DDR3",
             nphases      = 4,
             cl=8,
-            cwl=9,
+            cwl=7,
             sys_clk_freq = sys_clk_freq)
         self.add_sdram("sdram",
             phy       = self.ddrphy,
@@ -117,6 +117,7 @@ class BenchSoC(SoCCore):
             self.submodules.analyzer = LiteScopeAnalyzer(analyzer_signals,
                 depth        = 256,
                 clock_domain = "sys",
+                register     = True,
                 csr_csv      = "analyzer.csv")
 
         # Leds -------------------------------------------------------------------------------------
