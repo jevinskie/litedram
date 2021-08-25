@@ -68,13 +68,15 @@ class _CRG(Module, AutoCSR):
 # Bench SoC ----------------------------------------------------------------------------------------
 
 class BenchSoC(SoCCore):
-    def __init__(self, uart="crossover", sys_clk_freq=int(125e6), with_bist=False, with_analyzer=False):
-        platform = arty.Platform()
+    def __init__(self, uart="crossover", sys_clk_freq=int(200e6), with_bist=False, with_analyzer=False):
+        platform = arty.Platform(variant='a7-100')
 
         # SoCCore ----------------------------------------------------------------------------------
         SoCCore.__init__(self, platform, clk_freq=sys_clk_freq,
             ident               = "LiteDRAM bench on Arty",
             ident_version       = True,
+            cpu_type            = "vexriscv",
+            cpu_variant         = "minimal",
             integrated_rom_size = 0x10000,
             integrated_rom_mode = "rw",
             uart_name           = uart)
@@ -87,6 +89,8 @@ class BenchSoC(SoCCore):
             pads         = PHYPadsReducer(platform.request("ddram"), [0, 1]),
             memtype      = "DDR3",
             nphases      = 4,
+            cl=8,
+            cwl=9,
             sys_clk_freq = sys_clk_freq)
         self.add_sdram("sdram",
             phy       = self.ddrphy,
@@ -95,15 +99,16 @@ class BenchSoC(SoCCore):
             with_bist = with_bist)
 
         # UARTBone ---------------------------------------------------------------------------------
-        if uart != "serial":
-            self.add_uartbone(name="serial", clk_freq=100e6, baudrate=115200, cd="uart")
+        # if uart != "serial":
+        #     self.add_uartbone(name="serial", clk_freq=100e6, baudrate=3_000_000, cd="uart")
 
         # Etherbone --------------------------------------------------------------------------------
-        self.submodules.ethphy = LiteEthPHYMII(
-            clock_pads = self.platform.request("eth_clocks"),
-            pads       = self.platform.request("eth"),
-            with_hw_init_reset = False)
-        self.add_etherbone(phy=self.ethphy)
+        # self.submodules.ethphy = LiteEthPHYMII(
+        #     clock_pads = self.platform.request("eth_clocks"),
+        #     pads       = self.platform.request("eth"),
+        #     with_hw_init_reset = False)
+        # self.add_etherbone(phy=self.ethphy)
+        self.add_jtagbone()
 
         # Analyzer ---------------------------------------------------------------------------------
         if with_analyzer:
