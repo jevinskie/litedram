@@ -89,8 +89,8 @@ class BenchSoC(SoCCore):
             pads         = PHYPadsReducer(platform.request("ddram"), [0, 1]),
             memtype      = "DDR3",
             nphases      = 4,
-            cl=8,
-            cwl=7,
+            cl           = 8,
+            cwl          = 7,
             sys_clk_freq = sys_clk_freq)
         self.add_sdram("sdram",
             phy       = self.ddrphy,

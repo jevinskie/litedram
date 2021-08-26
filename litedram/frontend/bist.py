@@ -446,6 +446,7 @@ class _LiteDRAMBISTChecker(Module, AutoCSR):
         # DMA --------------------------------------------------------------------------------------
         dma = LiteDRAMDMAReader(dram_port)
         self.submodules += dma
+        dma.add_csr()
 
         # Address FSM ------------------------------------------------------------------------------
         cmd_counter = Signal(dram_port.address_width, reset_less=True)
