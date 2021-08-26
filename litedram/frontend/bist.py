@@ -160,6 +160,7 @@ class _LiteDRAMBISTGenerator(Module):
         # DMA --------------------------------------------------------------------------------------
         dma = LiteDRAMDMAWriter(dram_port)
         self.submodules += dma
+        dma.add_csr()
 
         cmd_counter = Signal(dram_port.address_width, reset_less=True)
 
@@ -233,6 +234,7 @@ class _LiteDRAMPatternGenerator(Module):
         # DMA --------------------------------------------------------------------------------------
         dma = LiteDRAMDMAWriter(dram_port)
         self.submodules += dma
+        dma.add_csr()
 
         cmd_counter = Signal(dram_port.address_width, reset_less=True)
 
