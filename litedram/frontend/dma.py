@@ -226,7 +226,8 @@ class LiteDRAMDMAWriter(Module, AutoCSR):
 
     def add_csr(self, default_base=0, default_length=0, default_enable=0, default_loop=0):
         self._sink = self.sink
-        self.sink  = stream.Endpoint([("data", self.port.data_width)])
+        self.sink = stream.Endpoint([("address", self.port.address_width),
+                                     ("data", self.port.data_width)])
 
         self._base   = CSRStorage(32, reset=default_base)
         self._length = CSRStorage(32, reset=default_length)
@@ -259,6 +260,7 @@ class LiteDRAMDMAWriter(Module, AutoCSR):
             self._sink.valid.eq(self.sink.valid),
             self._sink.last.eq(offset == (length - 1)),
             self._sink.address.eq(base + offset),
+            self.sink.address.eq(base + offset),
             self._sink.data.eq(self.sink.data),
             self.sink.ready.eq(self._sink.ready),
             If(self.sink.valid & self.sink.ready,
