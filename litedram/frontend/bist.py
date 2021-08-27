@@ -158,7 +158,7 @@ class _LiteDRAMBISTGenerator(Module):
         self.comb += addr_mask.eq((self.end - self.base) - 1)
 
         # DMA --------------------------------------------------------------------------------------
-        self.dma = dma = LiteDRAMDMAWriter(dram_port, with_csr=True)
+        self.dma = dma = LiteDRAMDMAWriter(dram_port, with_csr=False)
         self.submodules += dma
 
         cmd_counter = Signal(dram_port.address_width, reset_less=True)
@@ -208,8 +208,8 @@ class _LiteDRAMBISTGenerator(Module):
         self.comb += dma_sink_addr.eq(self.base[ashift:] + (addr_gen.o & addr_mask))
         self.comb += dma.sink.data.eq(data_gen.o)
 
-    def get_csrs(self):
-        return self.dma.get_csrs()
+    # def get_csrs(self):
+    #     return self.dma.get_csrs()
 
 
 @ResetInserter()
@@ -234,7 +234,7 @@ class _LiteDRAMPatternGenerator(Module):
         self.specials += addr_mem, data_mem, addr_port, data_port
 
         # DMA --------------------------------------------------------------------------------------
-        dma = LiteDRAMDMAWriter(dram_port)
+        dma = LiteDRAMDMAWriter(dram_port, with_csr=False)
         self.submodules += dma
 
         cmd_counter = Signal(dram_port.address_width, reset_less=True)
@@ -447,7 +447,7 @@ class _LiteDRAMBISTChecker(Module, AutoCSR):
         self.comb += addr_mask.eq((self.end - self.base) - 1)
 
         # DMA --------------------------------------------------------------------------------------
-        dma = LiteDRAMDMAReader(dram_port, with_csr=True)
+        dma = LiteDRAMDMAReader(dram_port, with_csr=False)
         self.submodules += dma
 
         # Address FSM ------------------------------------------------------------------------------
@@ -545,7 +545,7 @@ class _LiteDRAMPatternChecker(Module, AutoCSR):
         self.specials += addr_mem, data_mem, addr_port, data_port
 
         # DMA --------------------------------------------------------------------------------------
-        dma = LiteDRAMDMAReader(dram_port, with_csr=True)
+        dma = LiteDRAMDMAReader(dram_port, with_csr=False)
         self.submodules += dma
 
         # Address FSM ------------------------------------------------------------------------------
