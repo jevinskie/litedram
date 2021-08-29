@@ -76,7 +76,7 @@ class LiteDRAMCrossbar(Module):
 
         self.masters = []
 
-    def get_port(self, mode="both", data_width=None, clock_domain="sys", reverse=False):
+    def get_port(self, mode="both", data_width=None, clock_domain="sys", reverse=False, name=None):
         if self.finalized:
             raise FinalizeError
 
@@ -90,7 +90,8 @@ class LiteDRAMCrossbar(Module):
             address_width = self.rca_bits + self.bank_bits - self.rank_bits,
             data_width    = self.controller.data_width,
             clock_domain  = "sys",
-            id            = len(self.masters))
+            id            = len(self.masters),
+            name          = name)
         self.masters.append(port)
 
         # Clock domain crossing --------------------------------------------------------------------
@@ -100,7 +101,8 @@ class LiteDRAMCrossbar(Module):
                 address_width = port.address_width,
                 data_width    = port.data_width,
                 clock_domain  = clock_domain,
-                id            = port.id)
+                id            = port.id,
+                name          = f"{name}_cd_{clock_domain}" if name else None)
             self.submodules += LiteDRAMNativePortCDC(new_port, port)
             port = new_port
 
@@ -115,7 +117,8 @@ class LiteDRAMCrossbar(Module):
                 address_width = port.address_width + addr_shift,
                 data_width    = data_width,
                 clock_domain  = clock_domain,
-                id            = port.id)
+                id            = port.id,
+                name          = f"{name}_dwc" if name else None)
             self.submodules += ClockDomainsRenamer(clock_domain)(
                 LiteDRAMNativePortConverter(new_port, port, reverse))
             port = new_port

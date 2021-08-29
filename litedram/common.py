@@ -326,15 +326,15 @@ def rdata_description(data_width):
     return [("data", data_width)] # Read Data.
 
 class LiteDRAMNativePort(Settings):
-    def __init__(self, mode, address_width, data_width, clock_domain="sys", id=0):
+    def __init__(self, mode, address_width, data_width, clock_domain="sys", id=0, name=None):
         self.set_attributes(locals())
 
         self.flush = Signal()
         self.lock  = Signal()
 
-        self.cmd   = stream.Endpoint(cmd_description(address_width))
-        self.wdata = stream.Endpoint(wdata_description(data_width))
-        self.rdata = stream.Endpoint(rdata_description(data_width))
+        self.cmd   = stream.Endpoint(cmd_description(address_width), name=f'{name}_cmd' if name else None, flat_naming=True)
+        self.wdata = stream.Endpoint(wdata_description(data_width), name=f'{name}_wdata' if name else None, flat_naming=True)
+        self.rdata = stream.Endpoint(rdata_description(data_width), name=f'{name}_rdata' if name else None, flat_naming=True)
 
         # retro-compatibility # FIXME: remove
         self.aw = self.address_width
