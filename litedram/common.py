@@ -14,6 +14,7 @@ from collections import OrderedDict
 from typing import Union, Optional
 
 from migen import *
+from migen.fhdl.structure import DunderSignalsMixin
 
 from litex.soc.interconnect import stream
 
@@ -325,7 +326,7 @@ def wdata_description(data_width):
 def rdata_description(data_width):
     return [("data", data_width)] # Read Data.
 
-class LiteDRAMNativePort(Settings):
+class LiteDRAMNativePort(Settings, DunderSignalsMixin):
     def __init__(self, mode, address_width, data_width, clock_domain="sys", id=0, name=None):
         self.set_attributes(locals())
 
@@ -337,9 +338,9 @@ class LiteDRAMNativePort(Settings):
         self.rdata = stream.Endpoint(rdata_description(data_width), name=f'{name}_rdata' if name else None, flat_naming=True)
 
         # retro-compatibility # FIXME: remove
-        self.aw = self.address_width
-        self.dw = self.data_width
-        self.cd = self.clock_domain
+        # self.aw = self.address_width
+        # self.dw = self.data_width
+        # self.cd = self.clock_domain
 
     def get_bank_address(self, bank_bits, cba_shift):
         cba_upper = cba_shift + bank_bits
