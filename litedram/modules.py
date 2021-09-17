@@ -517,6 +517,31 @@ class AS4C32M8(SDRModule):
     technology_timings = _TechnologyTimings(tREFI=64e6/8192, tWTR=(2, None), tCCD=(1, None), tRRD=(None, 15))
     speedgrade_timings = {"default": _SpeedgradeTimings(tRP=20, tRCD=20, tWR=15, tRFC=(None, 66), tFAW=None, tRAS=44)}
 
+
+
+
+class H57V2562GTR(SDRModule):
+    # geometry
+    nbanks = 4     # Internal 4bank operation pg. 4
+    nrows  = 8192  # Row Address: RA0 ~ RA12 pg. 6
+    ncols  = 512   # Column Address: CA0 ~ CA8 pg. 6
+    # timings
+    # tREFI: 8,192 Refresh cycles / 64ms pg. 4
+    # tWTR: Write Command to Data-In Delay 0 CLK pg. 12
+    # tCCD:
+    # tRRD:
+    technology_timings = _TechnologyTimings(tREFI=64e6/8192, tWTR=(2, None), tCCD=(1, None), tRRD=(None, 10))
+    # tRP:
+    # tRCD:
+    # tWR:
+    # tRFC:
+    # tFAW:
+    # tRAS:
+    speedgrade_timings = {"default": _SpeedgradeTimings(tRP=20, tRCD=15, tWR=15, tRFC=(None, 63), tFAW=None, tRAS=42)}
+
+
+
+
 class M12L64322A(SDRModule):
     # geometry
     nbanks = 4
