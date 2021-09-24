@@ -531,12 +531,12 @@ class H57V2562GTR(SDRModule):
     # tCCD:
     # tRRD:
     technology_timings = _TechnologyTimings(tREFI=64e6/8192, tWTR=(2, None), tCCD=(1, None), tRRD=(None, 10))
-    # tRP:
-    # tRCD:
+    # tRP: RAS Precharge Time 20 ns pg. 12
+    # tRCD: RAS to CAS delay 20 ns pg. 12
     # tWR:
     # tRFC:
     # tFAW:
-    # tRAS:
+    # tRAS: RAS Active Time 42 ns min 100k max pg. 12
     speedgrade_timings = {"default": _SpeedgradeTimings(tRP=20, tRCD=15, tWR=15, tRFC=(None, 63), tFAW=None, tRAS=42)}
 
 
