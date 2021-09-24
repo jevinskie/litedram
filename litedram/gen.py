@@ -65,30 +65,47 @@ from litedram.frontend.fifo import LiteDRAMFIFO
 
 def get_common_ios():
     return [
-        # clk / rst
+        # Clk/Rst.
         ("clk", 0, Pins(1)),
         ("rst", 0, Pins(1)),
 
-        # serial
-        ("serial", 0,
-            Subsignal("tx", Pins(1)),
-            Subsignal("rx", Pins(1))
-        ),
-
-        # crg status
+        # PLL status.
         ("pll_locked", 0, Pins(1)),
 
-        # init status
+        # Init status.
         ("init_done",  0, Pins(1)),
         ("init_error", 0, Pins(1)),
 
-        # iodelay clk / rst
+        # IODELAY Clk/Rst.
         ("clk_iodelay", 0, Pins(1)),
         ("rst_iodelay", 0, Pins(1)),
 
-        # user clk / rst
+        # USER Clk/Rst.
         ("user_clk", 0, Pins(1)),
         ("user_rst", 0, Pins(1))
+    ]
+
+
+def get_uart_std_ios():
+    return [
+        ("uart", 0,
+            Subsignal("tx", Pins(1)),
+            Subsignal("rx", Pins(1))
+        ),
+    ]
+
+def get_uart_fifo_ios():
+    return [
+        ("uart_tx", 0,
+            Subsignal("valid", Pins(1)),
+            Subsignal("ready", Pins(1)),
+            Subsignal("data",  Pins(8))
+        ),
+        ("uart_rx", 0,
+            Subsignal("valid", Pins(1)),
+            Subsignal("ready", Pins(1)),
+            Subsignal("data",  Pins(8))
+        ),
     ]
 
 def get_dram_ios(core_config):
@@ -456,10 +473,10 @@ class LiteDRAMCore(SoCCore):
         cpu_type       = core_config["cpu"]
         cpu_variant    = core_config.get("cpu_variant", "standard")
         csr_data_width = core_config.get("csr_data_width", 8)
+        uart_type      = core_config.get("uart", "rs232")
         if cpu_type is None:
             kwargs["integrated_rom_size"]  = 0
             kwargs["integrated_sram_size"] = 0
-            kwargs["with_uart"]            = False
             kwargs["with_timer"]           = False
             kwargs["with_ctrl"]            = False
 
@@ -468,7 +485,37 @@ class LiteDRAMCore(SoCCore):
             cpu_type       = cpu_type,
             cpu_variant    = cpu_variant,
             csr_data_width = csr_data_width,
+            with_uart      = False,
             **kwargs)
+
+        # UART -------------------------------------------------------------------------------------
+        if cpu_type is not None:
+            assert uart_type in ["rs232", "fifo"]
+            if uart_type == "fifo":
+                platform.add_extension(get_uart_fifo_ios())
+                uart_interface = RS232PHYInterface()
+                self.submodules.uart = UART(uart_interface, tx_fifo_depth=1, rx_fifo_depth=1)
+                uart_tx_pads = platform.request("uart_tx")
+                uart_rx_pads = platform.request("uart_rx")
+                self.comb += [
+                    # UART TX.
+                uart_tx_pads.valid.eq(uart_interface.sink.valid),
+                    uart_interface.sink.ready.eq(uart_tx_pads.ready),
+                    uart_tx_pads.data.eq(uart_interface.sink.data),
+
+                # UART RX.
+                uart_interface.source.valid.eq(uart_rx_pads.valid),
+                    uart_rx_pads.ready.eq(uart_interface.source.ready),
+                    uart_interface.source.data.eq(uart_rx_pads.data)
+                ]
+            else:
+                platform.add_extension(get_uart_std_ios())
+                self.submodules.uart_phy = RS232PHY(platform.request("uart"), self.clk_freq, 115200)
+                self.submodules.uart = UART(self.uart_phy)
+            if self.irq.enabled:
+                self.irq.add("uart", use_loc_if_exists=True)
+            else:
+                self.add_constant("UART_POLLING")
 
         # CRG --------------------------------------------------------------------------------------
         if isinstance(platform, SimPlatform):
@@ -693,15 +740,17 @@ class LiteDRAMCore(SoCCore):
                 ]
             # FIFO ---------------------------------------------------------------------------------
             elif port["type"] == "fifo":
-                user_port = self.sdram.crossbar.get_port(data_width=port.get("data_width", None))
-                platform.add_extension(get_fifo_user_port_ios(name, user_port.data_width))
+                user_port = self.sdram.crossbar.get_port()
+                data_width = port.get("data_width", user_port.data_width)
+                platform.add_extension(get_fifo_user_port_ios(name, data_width))
                 _user_fifo_io = platform.request("user_fifo_{}".format(name))
                 fifo = LiteDRAMFIFO(
-                    data_width      = user_port.data_width,
+                    data_width      = data_width,
                     base            = port["base"],
                     depth           = port["depth"],
                     write_port      = self.sdram.crossbar.get_port("write"),
                     read_port       = self.sdram.crossbar.get_port("read"),
+                    with_bypass     = True,
                 )
                 self.submodules += fifo
                 self.comb += [

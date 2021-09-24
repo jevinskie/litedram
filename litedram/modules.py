@@ -643,6 +643,18 @@ class P3R1GE4JGF(DDR2Module):
 class DDR3Module(SDRAMModule):                     memtype = "DDR3"
 class DDR3RegisteredModule(SDRAMRegisteredModule): memtype = "DDR3"
 
+class AS4C128M16(DDR3Module):
+    # geometry
+    nbanks = 8
+    nrows  = 16384
+    ncols  = 1024
+    # timings
+    technology_timings = _TechnologyTimings(tREFI=64e6/8192, tWTR=(4, 7.5), tCCD=(4, None), tRRD=(4, 6), tZQCS=(64, 80))
+    speedgrade_timings = {
+        "1600": _SpeedgradeTimings(tRP=13.75, tRCD=13.75, tWR=13.75, tRFC=(160, None), tFAW=(None, 40), tRAS=35),
+    }
+    speedgrade_timings["default"] = speedgrade_timings["1600"]
+
 class MT41K64M16(DDR3Module):
     # geometry
     nbanks = 8
@@ -1000,9 +1012,34 @@ class MTA18ASF2G72PZ(DDR4RegisteredModule):
     trfc  = {"1x": (None, 350), "2x": (None, 260),   "4x": (None, 160)}
     technology_timings = _TechnologyTimings(tREFI=trefi, tWTR=(4, 7.5), tCCD=(4, None), tRRD=(4, 4.9), tZQCS=(128, 80))
     speedgrade_timings = {
-        "2400": _SpeedgradeTimings(tRP=13.32, tRCD=13.32, tWR=15, tRFC=trfc, tFAW=(20, 25), tRAS=32),
+        "2400": _SpeedgradeTimings(tRP=14.16, tRCD=14.16, tWR=15, tRFC=trfc, tFAW=(20, 25), tRAS=32),
+        "2666": _SpeedgradeTimings(tRP=14.25, tRCD=14.25, tWR=15, tRFC=trfc, tFAW=(20, 25), tRAS=32),
+        "2933": _SpeedgradeTimings(tRP=14.32, tRCD=14.32, tWR=15, tRFC=trfc, tFAW=(20, 25), tRAS=32),
+        "3200": _SpeedgradeTimings(tRP=13.75, tRCD=13.75, tWR=15, tRFC=trfc, tFAW=(20, 25), tRAS=32),
     }
     speedgrade_timings["default"] = speedgrade_timings["2400"]
+
+class MTA36ASF4G72PZ(MTA18ASF2G72PZ): pass
+    # This module is similar to MTA18ASF2G72PZ, with the exception that it is a dual-rank module. The rank number
+    # can be specified in the PHY settings.
+
+class HMA82GR7DJR4N(DDR4RegisteredModule):
+    # geometry
+    ngroupbanks = 4
+    ngroups     = 4
+    nbanks      = ngroups * ngroupbanks
+    nrows       = 131072
+    ncols       = 1024
+    # timings
+    technology_timings = _TechnologyTimings(tREFI=64e6/8192, tWTR=(4, 7.5), tCCD=(4, None), tRRD=(4, 4.9), tZQCS=(128, 80))
+    speedgrade_timings = {
+        "3200": _SpeedgradeTimings(tRP=13.75, tRCD=13.75, tWR=15, tRFC=416, tFAW=30, tRAS=32),
+    }
+    speedgrade_timings["default"] = speedgrade_timings["3200"]
+
+class HMA84GR7DJR4N(HMA82GR7DJR4N): pass
+    # This module is similar to HMA82GR7DJR4N, with the exception that it is a dual-rank module. The rank number
+    # can be specified in the PHY settings.
 
 # LPDDR4 -------------------------------------------------------------------------------------------
 
